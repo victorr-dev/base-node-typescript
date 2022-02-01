@@ -6,6 +6,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "dev": "nodemon",
+    "start": "node ./dist/index.js",
     "build": "tsc --build"
   },
   "keywords": [],
@@ -17,5 +18,12 @@
     "ts-node": "^10.3.0",
     "typescript": "^4.4.4"
   },
-  "dependencies": {}
+  "dependencies": {
+    "@thiagoelg/node-printer": "^0.5.6",
+    "@types/dotenv": "^8.2.0",
+    "dotenv": "^14.2.0",
+    "pg": "^8.7.1",
+    "reflect-metadata": "^0.1.13",
+    "typeorm": "^0.2.41"
+  }
 }
