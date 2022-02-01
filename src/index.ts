@@ -34,9 +34,9 @@ async function closeConnectionDb() {
 }
 
 const main = async () => {
+  await openConnectionDb();
 
   while (true) {
-    await openConnectionDb();
     
     const resp: IInterchange[] = await connection.query(`
   Select 
@@ -64,11 +64,10 @@ const main = async () => {
   limit 10;
   `)
 
-    await closeConnectionDb();
-    console.log(resp)
+  console.log(resp)
 
     
-
+    
     for await (const intercambio of resp) {
 
       const pathFile = path.resolve(`./uploads/${intercambio.hash}.pdf`);
@@ -78,45 +77,44 @@ const main = async () => {
         break;
       }
 
+      await delay(60000)
       printer.printFile({
-        filename: pathFile,
-        printer: intercambio.printerName,
-        options: {
-          copies: 2
-        },
-        error: (err) => {
-          console.log('Error de impresion', err);
-        },
-        success: async (data) => {
-          console.log(data);
-          //@ts-ignore
-          const jobInfo = printer.getJob(intercambio.printerName!, data);
-          //@ts-ignore
-          console.log(jobInfo.status.indexOf('PENDING'))
-          // @ts-ignore
-          if (jobInfo.status.indexOf('PENDING') == 0) {
-            {
-              console.log('Esperando a que termine la impresion');
-              try {
-                await openConnectionDb();
-                
-                const resp = await connection.getRepository(Interchange).update(intercambio.id!, { isImpreso: true });
-                console.log(resp);
-                await closeConnectionDb();
-                
-                console.log(`Termina ejecucion`);
-                console.log('Se actualizo el estado del intercambio', intercambio.id);
-                
-              } catch (error) {
-                console.log('Error ejecucion de query',error);
-              }
-              return;
-            }
-          }
-        }
+       filename: pathFile,
+       printer: intercambio.printerName,
+       options: {
+         copies: 2
+       },
+       error: (err) => {
+         console.log('Error de impresion', err);
+       },
+       success: async (data) => {
+         console.log(data);
+         //@ts-ignore
+         const jobInfo = printer.getJob(intercambio.printerName!, data);
+         //@ts-ignore
+         console.log(jobInfo.status.indexOf('PENDING'))
+         // @ts-ignore
+         if (jobInfo.status.indexOf('PENDING') == 0) {
+           {
+             console.log('Esperando a que termine la impresion');
+             try {
+               
+               const resp = await connection.getRepository(Interchange).update(intercambio.id!, { isImpreso: true });
+               console.log(resp);
+               
+               console.log(`Termina ejecucion`);
+               console.log('Se actualizo el estado del intercambio', intercambio.id);
+               
+             } catch (error) {
+               console.log('Error ejecucion de query',error);
+             }
+             return;
+           }
+         }
+       }
       })
     }
-
+    
     console.log(new Date().toLocaleTimeString());
 
     
